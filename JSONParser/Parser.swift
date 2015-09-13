@@ -2,7 +2,6 @@ public enum JSON {
   case S(String), D(Double), I(Int), B(Bool), A([JSON]), O([String:JSON]), null
 }
 
-
 public enum JSONError : ErrorType { case UnBal(String), Parse(String), Empty }
 
 extension String.CharacterView {
