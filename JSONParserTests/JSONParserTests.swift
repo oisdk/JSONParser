@@ -10,27 +10,71 @@ import XCTest
 @testable import JSONParser
 
 class JSONParserTests: XCTestCase {
+  
+  // Taken from http://json.org/example.html
+  
+  func testFirst() {
+
+//{
+//  "glossary": {
+//    "title": "example glossary",
+//    "GlossDiv": {
+//      "title": "S",
+//      "GlossList": {
+//        "GlossEntry": {
+//          "ID": "SGML",
+//          "SortAs": "SGML",
+//          "GlossTerm": "Standard Generalized Markup Language",
+//          "Acronym": "SGML",
+//          "Abbrev": "ISO 8879:1986",
+//          "GlossDef": {
+//            "para": "A meta-markup language, used to create markup languages such as DocBook.",
+//            "GlossSeeAlso": ["GML", "XML"]
+//          },
+//          "GlossSee": "markup"
+//        }
+//      }
+//    }
+//  }
+//}
+
+    let coded = "{\n    \"glossary\": {\n        \"title\": \"example glossary\",\n        \"GlossDiv\": {\n            \"title\": \"S\",\n            \"GlossList\": {\n                \"GlossEntry\": {\n                    \"ID\": \"SGML\",\n                    \"SortAs\": \"SGML\",\n                    \"GlossTerm\": \"Standard Generalized Markup Language\",\n                    \"Acronym\": \"SGML\",\n                    \"Abbrev\": \"ISO 8879:1986\",\n                    \"GlossDef\": {\n                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n                        \"GlossSeeAlso\": [\"GML\", \"XML\"]\n                    },\n                    \"GlossSee\": \"markup\"\n                }\n            }\n        }\n    }\n}\n"
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+//{
+//    "glossary": {
+//        "title": "example glossary",
+//        "GlossDiv": {
+//            "title": "S",
+//            "GlossList": {
+//                "GlossEntry": {
+//                    "ID": "SGML",
+//                    "Acronym": "SGML",
+//                    "GlossDef": {
+//                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
+//                        "GlossSeeAlso": [
+//                            "GML",
+//                            "XML"
+//                        ]
+//                    },
+//                    "SortAs": "SGML",
+//                    "GlossTerm": "Standard Generalized Markup Language",
+//                    "GlossSee": "markup",
+//                    "Abbrev": "ISO 8879:1986"
+//                }
+//            }
+//        }
+//    }
+//}
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
+    let expectation = "{\n    \"glossary\": {\n        \"title\": \"example glossary\",\n        \"GlossDiv\": {\n            \"title\": \"S\",\n            \"GlossList\": {\n                \"GlossEntry\": {\n                    \"ID\": \"SGML\",\n                    \"Acronym\": \"SGML\",\n                    \"GlossDef\": {\n                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n                        \"GlossSeeAlso\": [\n                            \"GML\",\n                            \"XML\"\n                        ]\n                    },\n                    \"SortAs\": \"SGML\",\n                    \"GlossTerm\": \"Standard Generalized Markup Language\",\n                    \"GlossSee\": \"markup\",\n                    \"Abbrev\": \"ISO 8879:1986\"\n                }\n            }\n        }\n    }\n}"
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
-        }
+    switch coded.asJSONResult() {
+    case let .Some(j):
+      print(j.description)
+      XCTAssertEqual(expectation, j.description)
+    case let .Error(e): XCTAssert(false, String(reflecting: e))
     }
+  }
     
 }

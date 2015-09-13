@@ -37,6 +37,7 @@
 		70E000AF1BA5D2D400939B7E /* CollectionType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionType.swift; sourceTree = "<group>"; };
 		70E000B11BA5D2E100939B7E /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		70E000B31BA5D33300939B7E /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
+		70E000B61BA5DBFA00939B7E /* Playground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Playground.playground; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				70E000AD1BA5D2C600939B7E /* JSON.swift */,
+				70E000B61BA5DBFA00939B7E /* Playground.playground */,
 				70E000B31BA5D33300939B7E /* Result.swift */,
 				70E000B11BA5D2E100939B7E /* String.swift */,
 				70E000AF1BA5D2D400939B7E /* CollectionType.swift */,
