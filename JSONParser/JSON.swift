@@ -28,8 +28,8 @@ extension String {
     case "false": return .Some(.B(false))
     case let s: return
       Int(s).map    { i in .Some(.I(i)) } ??
-        Double(s).map { d in .Some(.D(d)) } ??
-        .Error(.ParseError)
+      Double(s).map { d in .Some(.D(d)) } ??
+      .Error(.ParseError)
     }
   }
 }
