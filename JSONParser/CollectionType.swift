@@ -1,5 +1,7 @@
 extension CollectionType where Index : BidirectionalIndexType {
-  internal func lastIndexOfNot(@noescape isNotElement: Generator.Element throws -> Bool) rethrows -> Index? {
+  internal func lastIndexOfNot
+    (@noescape isNotElement: Generator.Element throws -> Bool)
+    rethrows -> Index? {
     for i in indices.reverse()
       where (try !isNotElement(self[i])) {
         return i
@@ -9,7 +11,9 @@ extension CollectionType where Index : BidirectionalIndexType {
 }
 
 extension CollectionType {
-  internal func indexOfNot(@noescape isNotElement: Generator.Element throws -> Bool) rethrows -> Index? {
+  internal func indexOfNot
+    (@noescape isNotElement: Generator.Element throws -> Bool)
+    rethrows -> Index? {
     for i in indices
       where (try !isNotElement(self[i])) {
         return i
@@ -24,7 +28,8 @@ extension CollectionType where Generator.Element : Equatable {
   }
 }
 
-extension CollectionType where Index : BidirectionalIndexType, Generator.Element : Equatable {
+extension CollectionType where
+  Index : BidirectionalIndexType, Generator.Element : Equatable {
   internal func lastIndexOfNot(e: Generator.Element) -> Index? {
     return lastIndexOfNot { o in o == e }
   }

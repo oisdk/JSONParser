@@ -1,7 +1,26 @@
-public enum JSONError : ErrorType { case UnBalancedBrackets, ParseError, Empty }
+public enum JSONError : ErrorType {
+  case UnBal(String), Parse(String), Empty
+}
+extension JSONError: CustomStringConvertible {
+  public var description: String {
+    switch self {
+    case let .UnBal(s): return "Unbalanced delimiters: " + s
+    case let .Parse(s): return "Parse error on: " + s
+    case .Empty: return "Unexpected empty."
+    }
+  }
+}
 
 extension String.CharacterView {
-  func bracketSplit(open: Character, _ close: Character)
+  /// Splits a string into the contents of the first pair of balanced brackets and the 
+  /// rest. Requires that the first character is the opening bracket.
+  /// ```swift
+  /// let str = "[1, 2, [3, 4], {"a":5, "b":6}, 7], "fugh", true, null"
+  /// let ans = str.characters.bracks("[", "]")
+  /// // "1, 2, [3, 4], {"a":5, "b":6}, 7"
+  /// // , "fugh", true, null"
+  /// ```
+  private func bracks(open: Character, _ close: Character)
     -> Result<(String.CharacterView, String.CharacterView),JSONError> {
     var count = 1
     let d = dropFirst()
@@ -9,7 +28,7 @@ extension String.CharacterView {
       if c == close { --count } else
       if c == open  { ++count }
       return count == 0
-    }) else { return .Error(.UnBalancedBrackets) }
+    }) else { return .Error(.UnBal(String(self))) }
     return .Some(d.prefixUpTo(i), d.suffixFrom(i.successor()))
   }
 }
@@ -27,7 +46,7 @@ extension String {
     case let s: return
       Int(s).map    { i in .Some(.I(i)) } ??
       Double(s).map { d in .Some(.D(d)) } ??
-      .Error(.ParseError)
+      .Error(.Parse(self))
     }
   }
 }
@@ -50,13 +69,15 @@ extension String.CharacterView {
   private func decodeAsDict() -> Result<[String:JSON],JSONError> {
     var (curr,result) = (self,[String:JSON]())
     while let i = curr.indexOf("\"") {
-      guard let (k,b) = curr.suffixFrom(i).bracketSplit("\"", "\"")
-        else { return .Error(.UnBalancedBrackets) }
-      guard let j = b.indexOfNonEscaped(":") else { return .Error(.ParseError) }
-      guard let (v,d) = b.suffixFrom(j.successor()).decodeToDelim()
-        else { return .Error(.ParseError) }
-      result[String(k)] = v
-      curr = d
+      switch curr.suffixFrom(i).bracks("\"", "\"") {
+      case let .Error(e) : return .Error(e)
+      case let (k,b)?:
+        guard let j = b.indexOf(":") else { return .Error(.Parse(String(b))) }
+        guard let (v,d) = b.suffixFrom(j.successor()).decodeToDelim()
+          else { return .Error(.Parse(String(b))) }
+        result[String(k)] = v
+        curr = d
+      }
     }
     return .Some(result)
   }
@@ -69,29 +90,23 @@ extension String.CharacterView {
     guard let i = indexOfNot(wSpace.contains) else { return .Error(.Empty) }
     switch self[i] {
     case "[":
-      guard let (f,b) = suffixFrom(i).bracketSplit("[", "]")
-        else { return .Error(.UnBalancedBrackets) }
-      switch f.decodeAsArray() {
-      case let a?       : return .Some(.A(a), b)
-      case let .Error(e): return .Error(e)
+      return suffixFrom(i).bracks("[", "]").flatMap { (f,b) in
+        f.decodeAsArray().map { a in (.A(a),b) }
       }
     case "{":
-      guard let (f,b) = suffixFrom(i).bracketSplit("{", "}")
-        else { return .Error(.UnBalancedBrackets) }
-      switch f.decodeAsDict() {
-      case let o?       : return .Some(.O(o), b)
-      case let .Error(e): return .Error(e)
+      return suffixFrom(i).bracks("{", "}").flatMap { (f,b) in
+        f.decodeAsDict().map { o in (.O(o), b) }
       }
     case "\"":
-      guard let (f,b) = suffixFrom(i).bracketSplit("\"", "\"")
-        else { return .Error(.UnBalancedBrackets) }
-      return .Some(.S(String(f)), b)
+      return suffixFrom(i).bracks("\"", "\"").map { (f,b) in
+        (.S(String(f)),b)
+      }
     default:
       let suff = suffixFrom(i)
       let j = suff.indexOf(",") ?? suff.endIndex
-      guard let a = String(suff.prefixUpTo(j).trim(wSpace)).decodeAsAtom()
-        else { return .Error(.ParseError) }
-      return .Some(a, suff.suffixFrom(j))
+      return String(suff.prefixUpTo(j).trim(wSpace)).decodeAsAtom().map { a in
+        (a,suff.suffixFrom(j))
+      }
     }
   }
 }
@@ -127,9 +142,6 @@ extension String {
     }
   }
   public func asJSONResult() -> Result<JSON,JSONError> {
-    switch characters.decodeToDelim() {
-    case let j?: return .Some(j.0)
-    case let .Error(e): return .Error(e)
-    }
+    return characters.decodeToDelim().map { (j, _) in j}
   }
 }

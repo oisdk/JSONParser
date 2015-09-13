@@ -68,3 +68,5 @@ case let .Error(e):
 //         }
 //     }
 // }
+
+let errord = "[1, 2, nll, 3]".asJSONResult()
