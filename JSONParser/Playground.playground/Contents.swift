@@ -71,7 +71,11 @@ case let .Error(e):
 //: You'll get helpful errors if there's a problem with your JSON
 "[1, 2, nll, 3]".asJSONResult()
 "[1, 2, 3, {\"a\":4, \"b\":5]".asJSONResult()
-
-
-
-
+//: Building a JSON object is easy
+let jason: JSON = [
+  "first" : [1, 2, 3],
+  "second": nil,
+  "third" : true,
+  "fourth": [nil, 1, 4.5, false]
+]
+print(jason.description)
