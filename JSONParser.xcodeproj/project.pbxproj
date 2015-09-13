@@ -10,10 +10,11 @@
 		70E000971BA5D2B400939B7E /* JSONParser.h in Headers */ = {isa = PBXBuildFile; fileRef = 70E000961BA5D2B400939B7E /* JSONParser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		70E0009E1BA5D2B400939B7E /* JSONParser.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70E000931BA5D2B400939B7E /* JSONParser.framework */; settings = {ASSET_TAGS = (); }; };
 		70E000A31BA5D2B400939B7E /* JSONParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000A21BA5D2B400939B7E /* JSONParserTests.swift */; };
-		70E000AE1BA5D2C600939B7E /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000AD1BA5D2C600939B7E /* JSON.swift */; settings = {ASSET_TAGS = (); }; };
+		70E000AE1BA5D2C600939B7E /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000AD1BA5D2C600939B7E /* Parser.swift */; settings = {ASSET_TAGS = (); }; };
 		70E000B01BA5D2D400939B7E /* CollectionType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000AF1BA5D2D400939B7E /* CollectionType.swift */; settings = {ASSET_TAGS = (); }; };
 		70E000B21BA5D2E100939B7E /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000B11BA5D2E100939B7E /* String.swift */; settings = {ASSET_TAGS = (); }; };
 		70E000B41BA5D33300939B7E /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000B31BA5D33300939B7E /* Result.swift */; settings = {ASSET_TAGS = (); }; };
+		70E000B81BA6251400939B7E /* DescriptionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E000B71BA6251400939B7E /* DescriptionExtensions.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,11 +34,12 @@
 		70E0009D1BA5D2B400939B7E /* JSONParserTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JSONParserTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		70E000A21BA5D2B400939B7E /* JSONParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONParserTests.swift; sourceTree = "<group>"; };
 		70E000A41BA5D2B400939B7E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		70E000AD1BA5D2C600939B7E /* JSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
+		70E000AD1BA5D2C600939B7E /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		70E000AF1BA5D2D400939B7E /* CollectionType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionType.swift; sourceTree = "<group>"; };
 		70E000B11BA5D2E100939B7E /* String.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		70E000B31BA5D33300939B7E /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 		70E000B61BA5DBFA00939B7E /* Playground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Playground.playground; sourceTree = "<group>"; };
+		70E000B71BA6251400939B7E /* DescriptionExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DescriptionExtensions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,9 +82,10 @@
 		70E000951BA5D2B400939B7E /* JSONParser */ = {
 			isa = PBXGroup;
 			children = (
-				70E000AD1BA5D2C600939B7E /* JSON.swift */,
+				70E000AD1BA5D2C600939B7E /* Parser.swift */,
 				70E000B61BA5DBFA00939B7E /* Playground.playground */,
 				70E000B31BA5D33300939B7E /* Result.swift */,
+				70E000B71BA6251400939B7E /* DescriptionExtensions.swift */,
 				70E000B11BA5D2E100939B7E /* String.swift */,
 				70E000AF1BA5D2D400939B7E /* CollectionType.swift */,
 				70E000961BA5D2B400939B7E /* JSONParser.h */,
@@ -209,7 +212,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				70E000B21BA5D2E100939B7E /* String.swift in Sources */,
-				70E000AE1BA5D2C600939B7E /* JSON.swift in Sources */,
+				70E000B81BA6251400939B7E /* DescriptionExtensions.swift in Sources */,
+				70E000AE1BA5D2C600939B7E /* Parser.swift in Sources */,
 				70E000B41BA5D33300939B7E /* Result.swift in Sources */,
 				70E000B01BA5D2D400939B7E /* CollectionType.swift in Sources */,
 			);
