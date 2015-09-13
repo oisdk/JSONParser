@@ -32,15 +32,17 @@ extension String {
 }
 
 extension String.CharacterView {
+
   private func decodeAsArray() -> Result<[JSON],JSONError> {
-    return decodeAsArrayWith([])
-  }
-  private func decodeAsArrayWith(p: [JSON]) -> Result<[JSON],JSONError> {
-    switch decodeToDelim() {
-    case let (f,b)?: return b.decodeAsArrayWith(p + [f])
-    case let .Error(e):
-      if case .Empty = e { return .Some(p) }
-      return .Error(e)
+    var (curr,result) = (self,[JSON]())
+    for ;; {
+      switch curr.decodeToDelim() {
+      case let (f,b)?:
+        curr = b
+        result.append(f)
+      case .Error(.Empty): return .Some(result)
+      case let .Error(e): return .Error(e)
+      }
     }
   }
   
