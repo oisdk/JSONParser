@@ -4,13 +4,12 @@ extension String.CharacterView {
     return self[s...e]
   }
   internal func trim(cs: Set<Character>) -> String.CharacterView {
-    guard let s = indexOfNot(cs.contains), e = lastIndexOfNot(cs.contains) else  { return "".characters }
+    guard let s = indexOfNot(cs.contains), e = lastIndexOfNot(cs.contains)
+      else  { return "".characters }
     return self[s...e]
   }
-  internal func trim(c0: Character, _ c1: Character, _ rest: Character...) -> String.CharacterView {
-    return trim(Set([c0, c1] + rest))
-  }
-  internal func indexOfNonEscaped(@noescape isC: Character throws -> Bool) rethrows -> Index? {
+  internal func indexOfNonEscaped(@noescape isC: Character throws -> Bool)
+    rethrows -> Index? {
     let e = endIndex.predecessor()
     for (var i = startIndex; i != e; ++i) {
       let c = self[i]
@@ -19,7 +18,9 @@ extension String.CharacterView {
     }
     return try isC(self[e]) ? e : nil
   }
-  internal func indexOfNonEscaped(c: Character) -> Index? {
-    return indexOfNonEscaped { e in e == c }
+  internal func divideNonEscaped(@noescape isC: Character throws -> Bool)
+    rethrows -> (String.CharacterView,String.CharacterView)? {
+      guard let i = try indexOfNonEscaped(isC) else { return nil }
+      return (prefixUpTo(i),suffixFrom(i.successor()))
   }
 }
