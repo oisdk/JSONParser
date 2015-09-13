@@ -1,0 +1,1 @@
+public enum Result<T,E> { case Some(T), Error(E) }
