@@ -54,7 +54,7 @@ extension String.CharacterView {
     while let i = curr.indexOf("\"") {
       guard let (k,b) = curr.suffixFrom(i).bracketSplit("\"", "\"")
         else { return .Error(.UnBalancedBrackets) }
-      guard let j = b.indexOf(":") else { return .Error(.ParseError) }
+      guard let j = b.indexOfNonEscaped(":") else { return .Error(.ParseError) }
       guard let (v,d) = b.suffixFrom(j.successor()).decodeToDelim()
         else { return .Error(.ParseError) }
       result[String(k)] = v
