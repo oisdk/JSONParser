@@ -1,6 +1,5 @@
-public enum JSONError : ErrorType {
-  case UnBal(String), Parse(String), Empty
-}
+public enum JSONError : ErrorType { case UnBal(String), Parse(String), Empty }
+
 extension JSONError: CustomStringConvertible {
   public var description: String {
     switch self {
@@ -20,7 +19,7 @@ extension String.CharacterView {
   /// // "1, 2, [3, 4], {"a":5, "b":6}, 7"
   /// // , "fugh", true, null"
   /// ```
-  private func bracks(open: Character, _ close: Character)
+  private func brks(open: Character, _ close: Character)
     -> Result<(String.CharacterView, String.CharacterView),JSONError> {
     var count = 1
     let d = dropFirst()
@@ -37,26 +36,25 @@ public enum JSON {
   case S(String), D(Double), I(Int), B(Bool), A([JSON]), O([String:JSON]), null
 }
 
-extension String {
-  private func decodeAsAtom() -> Result<JSON,JSONError> {
-    switch self {
+private let wSpace: Set<Character> = [" ", ",", "\n"]
+
+extension String.CharacterView {
+  private var asAt: Result<JSON,JSONError> {
+    switch String(trim(wSpace)) {
     case "null" : return .Some(.null)
     case "true" : return .Some(.B(true))
     case "false": return .Some(.B(false))
     case let s: return
       Int(s).map    { i in .Some(.I(i)) } ??
       Double(s).map { d in .Some(.D(d)) } ??
-      .Error(.Parse(self))
+      .Error(.Parse(s))
     }
   }
-}
 
-extension String.CharacterView {
-
-  private func decodeAsArray() -> Result<[JSON],JSONError> {
+  private var asAr: Result<[JSON],JSONError> {
     var (curr,result) = (self,[JSON]())
     for ;; {
-      switch curr.decodeToDelim() {
+      switch curr.nextDecoded {
       case let (f,b)?:
         curr = b
         result.append(f)
@@ -66,14 +64,14 @@ extension String.CharacterView {
     }
   }
 
-  private func decodeAsDict() -> Result<[String:JSON],JSONError> {
+  private var asOb: Result<[String:JSON],JSONError> {
     var (curr,result) = (self,[String:JSON]())
     while let i = curr.indexOf("\"") {
-      switch curr.suffixFrom(i).bracks("\"", "\"") {
+      switch curr.suffixFrom(i).brks("\"", "\"") {
       case let .Error(e) : return .Error(e)
       case let (k,b)?:
         guard let j = b.indexOf(":") else { return .Error(.Parse(String(b))) }
-        guard let (v,d) = b.suffixFrom(j.successor()).decodeToDelim()
+        guard let (v,d) = b.suffixFrom(j.successor()).nextDecoded
           else { return .Error(.Parse(String(b))) }
         result[String(k)] = v
         curr = d
@@ -83,30 +81,16 @@ extension String.CharacterView {
   }
 }
 
-private let wSpace: Set<Character> = [" ", ",", "\n"]
-
 extension String.CharacterView {
-  private func decodeToDelim() -> Result<(JSON, String.CharacterView),JSONError> {
+  private var nextDecoded: Result<(JSON, String.CharacterView),JSONError> {
     guard let i = indexOfNot(wSpace.contains) else { return .Error(.Empty) }
+    let v = suffixFrom(i)
     switch self[i] {
-    case "[":
-      return suffixFrom(i).bracks("[", "]").flatMap { (f,b) in
-        f.decodeAsArray().map { a in (.A(a),b) }
-      }
-    case "{":
-      return suffixFrom(i).bracks("{", "}").flatMap { (f,b) in
-        f.decodeAsDict().map { o in (.O(o), b) }
-      }
-    case "\"":
-      return suffixFrom(i).bracks("\"", "\"").map { (f,b) in
-        (.S(String(f)),b)
-      }
-    default:
-      let suff = suffixFrom(i)
-      let j = suff.indexOf(",") ?? suff.endIndex
-      return String(suff.prefixUpTo(j).trim(wSpace)).decodeAsAtom().map { a in
-        (a,suff.suffixFrom(j))
-      }
+    case "[" : return v.brks("[","]").flatMap { (f,b) in f.asAr.map { a in (.A(a),b) }}
+    case "{" : return v.brks("{","}").flatMap { (f,b) in f.asOb.map { o in (.O(o),b) }}
+    case "\"": return v.brks("\"","\"").map { (f,b) in (.S(String(f)),b) }
+    default: return v.divide(",").map { (f,b) in f.asAt.map { a in (a,b) }} ??
+      v.asAt.map { a in (a,"".characters) }
     }
   }
 }
@@ -136,12 +120,12 @@ extension JSON : CustomStringConvertible {
 
 extension String {
   public func asJSONThrow() throws -> JSON {
-    switch characters.decodeToDelim() {
+    switch characters.nextDecoded {
     case let j?: return j.0
     case let .Error(e): throw e
     }
   }
   public func asJSONResult() -> Result<JSON,JSONError> {
-    return characters.decodeToDelim().map { (j, _) in j}
+    return characters.nextDecoded.map { (j, _) in j}
   }
 }
