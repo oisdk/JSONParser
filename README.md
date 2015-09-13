@@ -83,3 +83,29 @@ You'll even get helpful errors if there's a problem with your JSON:
 "[1, 2, nll, 3]".asJSONResult()               // Error(Parse error on: nll)
 "[1, 2, 3, {\"a\":4, \"b\":5]".asJSONResult() // Error(Unbalanced delimiters: {"a":4, "b":5)
 ```
+Building a JSON object is easy:
+```swift
+let jason: JSON = [
+  "first" : [1, 2, 3],
+  "second": nil,
+  "third" : true,
+  "fourth": [nil, 1, 4.5, false]
+]
+```
+```JSON
+{
+    "second": null,
+    "third": true,
+    "first": [
+        1,
+        2,
+        3
+    ],
+    "fourth": [
+        null,
+        1,
+        4.5,
+        false
+    ]
+}
+```
