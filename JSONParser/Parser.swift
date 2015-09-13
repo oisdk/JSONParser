@@ -1,15 +1,7 @@
 public enum JSON {
   case S(String), D(Double), I(Int), B(Bool), A([JSON]), O([String:JSON]), null
 }
-extension JSON {
-  public init(_ s: String)        { self = .S(s) }
-  public init(_ d: Double)        { self = .D(d) }
-  public init(_ i: Int)           { self = .I(i) }
-  public init(_ b: Bool)          { self = .B(b) }
-  public init(_ a: [JSON])        { self = .A(a) }
-  public init(_ o: [String:JSON]) { self = .O(o) }
-  public init()                   { self = .null }
-}
+
 
 public enum JSONError : ErrorType { case UnBal(String), Parse(String), Empty }
 
@@ -29,12 +21,12 @@ private let wSpace: Set<Character> = [" ", ",", "\n"]
 extension String.CharacterView {
   private var asAt: Result<JSON,JSONError> {
     switch String(trim(wSpace)) {
-    case "null" : return .Some(JSON())
-    case "true" : return .Some(JSON(true))
-    case "false": return .Some(JSON(false))
+    case "null" : return .Some(.null)
+    case "true" : return .Some(.B(true))
+    case "false": return .Some(.B(false))
     case let s: return
-      Int(s)   .map(JSON.init).map(Result.Some) ??
-      Double(s).map(JSON.init).map(Result.Some) ??
+      Int(s).map { i in .Some(.I(i)) } ??
+      Double(s).map { d in .Some(.D(d)) } ??
       .Error(.Parse(s))
     }
   }
@@ -72,8 +64,8 @@ extension String.CharacterView {
     guard let i = indexOfNot(wSpace.contains) else { return .Error(.Empty) }
     let v = suffixFrom(i)
     switch self[i] {
-    case "[" : return v.brks("[","]").flatMap { (f,b) in f.asAr.map { a in (JSON(a),b) }}
-    case "{" : return v.brks("{","}").flatMap { (f,b) in f.asOb.map { o in (JSON(o),b) }}
+    case "[" : return v.brks("[","]").flatMap { (f,b) in f.asAr.map { a in (.A(a),b) }}
+    case "{" : return v.brks("{","}").flatMap { (f,b) in f.asOb.map { o in (.O(o),b) }}
     case "\"": return v.brks("\"","\"").map { (f,b) in (.S(String(f)),b) }
     default  : return v.divide(",").map { (f,b) in f.asAt.map { a in (a,b) }} ??
       v.asAt.map { a in (a,"".characters) }
