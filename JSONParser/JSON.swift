@@ -4,15 +4,13 @@ extension String.CharacterView {
   func bracketSplit(open: Character, _ close: Character)
     -> Result<(String.CharacterView, String.CharacterView),JSONError> {
     var count = 1
-    for i in indices.dropFirst() {
-      if self[i.predecessor()] == "\\" { continue }
-      if self[i] == close { --count } else
-      if self[i] == open  { ++count }
-      if count == 0 {
-        return .Some(self[startIndex.successor()..<i], suffixFrom(i.successor()))
-      }
-    }
-    return .Error(.UnBalancedBrackets)
+    let d = dropFirst()
+    guard let i = d.indexOfNonEscaped({ c in
+      if c == close { --count } else
+      if c == open  { ++count }
+      return count == 0
+    }) else { return .Error(.UnBalancedBrackets) }
+    return .Some(d.prefixUpTo(i), d.suffixFrom(i.successor()))
   }
 }
 

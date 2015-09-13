@@ -10,15 +10,16 @@ extension String.CharacterView {
   internal func trim(c0: Character, _ c1: Character, _ rest: Character...) -> String.CharacterView {
     return trim(Set([c0, c1] + rest))
   }
-  internal func indexOfNonEscaped(c: Character) -> Index? {
+  internal func indexOfNonEscaped(@noescape isC: Character throws -> Bool) rethrows -> Index? {
     let e = endIndex.predecessor()
     for (var i = startIndex; i != e; ++i) {
-      switch self[i] {
-      case "\\": ++i
-      case c   : return i
-      default  : continue
-      }
+      let c = self[i]
+      if c == "\\" { ++i } else
+      if try isC(c) { return i }
     }
-    return c == self[e] ? e : nil
+    return try isC(self[e]) ? e : nil
+  }
+  internal func indexOfNonEscaped(c: Character) -> Index? {
+    return indexOfNonEscaped { e in e == c }
   }
 }
