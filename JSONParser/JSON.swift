@@ -30,7 +30,7 @@ extension JSONError: CustomStringConvertible {
     switch self {
     case let .UnBal(s): return "Unbalanced delimiters: " + s
     case let .Parse(s): return "Parse error on: " + s
-    case .Empty: return "Unexpected empty."
+    case .Empty       : return "Unexpected empty."
     }
   }
 }
