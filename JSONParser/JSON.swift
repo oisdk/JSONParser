@@ -58,3 +58,49 @@ public func ==(lhs: JSON,rhs:JSON) -> Bool {
   default: return false
   }
 }
+
+extension JSON {
+  public var array: [JSON]? {
+    guard case let .A(a) = self else { return nil }
+    return a
+  }
+  public var object: [String:JSON]? {
+    guard case let .O(o) = self else { return nil }
+    return o
+  }
+  public var string: String? {
+    guard case let .S(s) = self else { return nil }
+    return s
+  }
+  public var bool: Bool? {
+    guard case let .B(b) = self else { return nil }
+    return b
+  }
+  public var int: Int? {
+    guard case let .I(i) = self else { return nil }
+    return i
+  }
+  public var double: Double? {
+    guard case let .D(d) = self else { return nil }
+    return d
+  }
+}
+
+extension JSON {
+  public subscript(i: Int) -> JSON? {
+    get { return array?[i] }
+    set {
+      guard var a = array else { return }
+      a[i] = newValue!
+      self = .A(a)
+    }
+  }
+  public subscript(s: String) -> JSON? {
+    get { return object?[s] }
+    set {
+      guard var o = object else { return }
+      o[s] = newValue!
+      self = .O(o)
+    }
+  }
+}

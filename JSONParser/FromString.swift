@@ -1,5 +1,3 @@
-public enum JSONError : ErrorType { case UnBal(String), Parse(String), Empty }
-
 extension String.CharacterView {
   private func brks(open: Character, _ close: Character)
     -> Result<(String.CharacterView, String.CharacterView),JSONError> {
@@ -13,6 +11,14 @@ extension String.CharacterView {
 
 private let wSpace: Set<Character> = [" ", ",", "\n"]
 
+extension Double {
+  init?(exp: String) {
+    guard let (f,b) = exp.characters.divide("E") else { return nil }
+    guard let n = Double(String(f)), e = Int(String(b)) else { return nil }
+    self = (0..<abs(e)).map { _ in 10 }.reduce(n, combine: (e < 0 ? (/) : (*)))
+  }
+}
+
 extension String.CharacterView {
   private var asAt: Result<JSON,JSONError> {
     switch String(trim(wSpace)) {
@@ -20,6 +26,7 @@ extension String.CharacterView {
     case "true" : return .Some(.B(true))
     case "false": return .Some(.B(false))
     case let s: return
+      Double(exp: s).map { d in .Some(.D(d)) } ??
       Int(s).map { i in .Some(.I(i)) } ??
       Double(s).map { d in .Some(.D(d)) } ??
       .Error(.Parse(s))
