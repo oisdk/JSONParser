@@ -1,5 +1,7 @@
-public enum JSON : Equatable {
-  case S(String), D(Double), I(Int), B(Bool), A([JSON]), O([String:JSON]), null
+public enum JSON {
+  case S(String), D(Double), I(Int)
+  case A([JSON]), O([String:JSON])
+  case B(Bool), null
 }
 
 extension JSON: IntegerLiteralConvertible {
@@ -45,6 +47,8 @@ extension JSON: DictionaryLiteralConvertible {
     self = .O(dict)
   }
 }
+
+extension JSON: Equatable {}
 
 public func ==(lhs: JSON,rhs:JSON) -> Bool {
   switch (lhs, rhs){
