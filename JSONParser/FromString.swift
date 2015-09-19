@@ -9,11 +9,12 @@ extension String.CharacterView {
   }
 }
 
+private let expChr: Set<Character> = ["E", "e"]
 private let wSpace: Set<Character> = [" ", ",", "\n"]
 
 extension Double {
   init?(exp: String) {
-    guard let (f,b) = exp.characters.divide("E") else { return nil }
+    guard let (f,b) = exp.characters.divideNonEscaped(expChr.contains) else { return nil }
     guard let n = Double(String(f)), e = Int(String(b)) else { return nil }
     self = (0..<abs(e)).map { _ in 10 }.reduce(n, combine: (e < 0 ? (/) : (*)))
   }
