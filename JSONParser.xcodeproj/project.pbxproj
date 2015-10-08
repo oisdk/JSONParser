@@ -30,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		701E174B1BAD9EC000E23449 /* Reddit.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Reddit.playground; sourceTree = "<group>"; };
 		703872D41BA6CA1100697A8E /* ToString.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToString.swift; sourceTree = "<group>"; };
 		703872D61BA6CA3900697A8E /* JSONError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONError.swift; sourceTree = "<group>"; };
 		7047B9721BA63BF6003E6913 /* JSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
@@ -96,6 +97,7 @@
 				70E000961BA5D2B400939B7E /* JSONParser.h */,
 				70E000981BA5D2B400939B7E /* Info.plist */,
 				7047B9721BA63BF6003E6913 /* JSON.swift */,
+				701E174B1BAD9EC000E23449 /* Reddit.playground */,
 			);
 			path = JSONParser;
 			sourceTree = "<group>";
