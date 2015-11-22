@@ -8,7 +8,7 @@ extension CollectionType where
     return dropFirst().divideNonEscaped("\\") { c in
       if c == close { --count } else if c == open  { ++count }
       return count == 0
-    }.map(Result.Some) ?? .Error(JSONError.UnBal(String(reflecting: self)))
+    }.map(Result.Some) ?? .Error(JSONError.UnBal(String(self)))
   }
 }
 
@@ -17,10 +17,7 @@ private let wSpace: Set<Character> = [" ", ",", "\n"]
 extension CollectionType where
   Generator.Element == Character,
   Index: BidirectionalIndexType,
-  SubSequence == Self,
-  SubSequence: CollectionType,
-  SubSequence.Generator.Element == Character,
-  SubSequence.Index : BidirectionalIndexType {
+  SubSequence == Self {
   private var asAt: Result<JSON,JSONError> {
     guard let t = trim(wSpace) else { return .Error(.Parse(String(self))) }
     switch String(t) {
@@ -52,7 +49,7 @@ extension CollectionType where
     while let i = curr.indexOf("\"") {
       switch curr.suffixFrom(i).brks("\"", "\"") {
       case let .Error(e) : return .Error(e)
-      case let .Some(k,b):
+      case let (k,b)?:
         guard case let (v,d)?? =
           (b.indexOf(":")?.successor()).map(b.suffixFrom)?.nextDecoded
           else { return .Error(.Parse(String(b))) }
