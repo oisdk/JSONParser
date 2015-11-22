@@ -23,7 +23,7 @@ httpGet(request){
   (data, error) -> Void in
   if let error = error {
     print(error)
-  } else if let jo = data.asJSONResult() {
+  } else if let jo = data.asJSON() {
     print(jo)
   }
 }
