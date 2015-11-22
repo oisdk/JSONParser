@@ -1,26 +1,26 @@
-extension String.CharacterView {
+extension CollectionType where
+  Generator.Element == Character,
+  SubSequence: CollectionType,
+  SubSequence.Generator.Element == Character {
   private func brks(open: Character, _ close: Character)
-    -> Result<(String.CharacterView, String.CharacterView),JSONError> {
+    -> Result<(SubSequence.SubSequence, SubSequence.SubSequence),JSONError> {
     var count = 1
     return dropFirst().divideNonEscaped("\\") { c in
       if c == close { --count } else if c == open  { ++count }
       return count == 0
-    }.map(Result.Some) ?? .Error(.UnBal(String(self)))
+    }.map(Result.Some) ?? .Error(JSONError.UnBal(String(reflecting: self)))
   }
 }
 
-private let expChr: Set<Character> = ["E", "e"]
 private let wSpace: Set<Character> = [" ", ",", "\n"]
 
-extension Double {
-  init?(exp: String) {
-    guard let (f,b) = exp.characters.divideNonEscaped("\\", isC: expChr.contains) else { return nil }
-    guard let n = Double(String(f)), e = Int(String(b)) else { return nil }
-    self = (0..<abs(e)).map { _ in 10 }.reduce(n, combine: (e < 0 ? (/) : (*)))
-  }
-}
-
-extension String.CharacterView {
+extension CollectionType where
+  Generator.Element == Character,
+  Index: BidirectionalIndexType,
+  SubSequence == Self,
+  SubSequence: CollectionType,
+  SubSequence.Generator.Element == Character,
+  SubSequence.Index : BidirectionalIndexType {
   private var asAt: Result<JSON,JSONError> {
     guard let t = trim(wSpace) else { return .Error(.Parse(String(self))) }
     switch String(t) {
@@ -28,7 +28,6 @@ extension String.CharacterView {
     case "true" : return .Some(.B(true))
     case "false": return .Some(.B(false))
     case let s: return
-      Double(exp: s).map { d in .Some(.D(d)) } ??
       Int(s).map { i in .Some(.I(i)) } ??
       Double(s).map { d in .Some(.D(d)) } ??
       .Error(.Parse(s))
@@ -53,7 +52,7 @@ extension String.CharacterView {
     while let i = curr.indexOf("\"") {
       switch curr.suffixFrom(i).brks("\"", "\"") {
       case let .Error(e) : return .Error(e)
-      case let (k,b)?:
+      case let .Some(k,b):
         guard case let (v,d)?? =
           (b.indexOf(":")?.successor()).map(b.suffixFrom)?.nextDecoded
           else { return .Error(.Parse(String(b))) }
@@ -64,7 +63,7 @@ extension String.CharacterView {
     return .Some(result)
   }
 
-  private var nextDecoded: Result<(JSON, String.CharacterView),JSONError> {
+  private var nextDecoded: Result<(JSON, SubSequence),JSONError> {
     guard let i = indexOf(!wSpace.contains) else { return .Error(.Empty) }
     let v = suffixFrom(i)
     switch self[i] {
@@ -72,19 +71,19 @@ extension String.CharacterView {
     case "{" : return v.brks("{","}").flatMap { (f,b) in f.asOb.map { o in (.O(o),b) }}
     case "\"": return v.brks("\"","\"").map { (f,b) in (.S(String(f)),b) }
     default  : return v.divide(",").map { (f,b) in f.asAt.map { a in (a,b) }} ??
-      v.asAt.map { a in (a,"".characters) }
+      v.asAt.map { a in (a,self[startIndex..<startIndex]) }
     }
   }
 }
 
 extension String {
   public func asJSONThrow() throws -> JSON {
-    switch characters.nextDecoded {
+    switch ArraySlice(characters).nextDecoded {
     case let j?: return j.0
     case let .Error(e): throw e
     }
   }
   public func asJSONResult() -> Result<JSON,JSONError> {
-    return characters.nextDecoded.map { (j, _) in j}
+    return ArraySlice(characters).nextDecoded.map { (j, _) in j}
   }
 }

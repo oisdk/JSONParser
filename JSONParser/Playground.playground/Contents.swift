@@ -78,4 +78,7 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(jason.description)
+print(jason)
+
+
+Double("3E4")

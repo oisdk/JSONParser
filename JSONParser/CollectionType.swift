@@ -1,9 +1,9 @@
-extension CollectionType where Generator.Element : Equatable, Index : BidirectionalIndexType {
-  internal func trim(c: Generator.Element) -> SubSequence? {
-    guard let s = indexOfNot(c), e = lastIndexOfNot(c) else  { return nil }
-    return self[s...e]
-  }
-}
+//extension CollectionType where Generator.Element : Equatable, Index : BidirectionalIndexType {
+//  internal func trim(c: Generator.Element) -> SubSequence? {
+//    guard let s = indexOfNot(c), e = lastIndexOfNot(c) else  { return nil }
+//    return self[s...e]
+//  }
+//}
 
 extension CollectionType where Generator.Element : Hashable, Index : BidirectionalIndexType {
   internal func trim(cs: Set<Generator.Element>) -> SubSequence? {

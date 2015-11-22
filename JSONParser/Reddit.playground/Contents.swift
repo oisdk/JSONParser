@@ -16,15 +16,15 @@ func httpGet(request: NSURLRequest!, callback: (String, String?) -> Void) {
   task.resume()
 }
 
+
 var request = NSMutableURLRequest(URL: NSURL(string: "http://www.reddit.com/r/pics.json")!)
 
 httpGet(request){
   (data, error) -> Void in
-  if error != nil {
+  if let error = error {
     print(error)
-  } else {
-    let jo = try? data.asJSONThrow()
-    print(jo?.description)
+  } else if let jo = data.asJSONResult() {
+    print(jo)
   }
 }
 
