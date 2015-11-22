@@ -22,22 +22,16 @@ import JSONParser
 //         }
 //     }
 // }
-//: And use one of the two available methods. Either parse with error handling:
-do {
-  let handledParse = try first.asJSONThrow()
-} catch {
-  print("Oh noes")
-  print(error)
-}
+
 //: Or with a result type:
-switch first.asJSONResult() {
+switch first.asJSON() {
 case let j?: let _ = j
 case let .Error(e):
   print("Also oh noes")
   print(e)
 }
 //: The JSON can be got back, in a formatted form, via the description property:
-switch first.asJSONResult() {
+switch first.asJSON() {
 case let j?: print(j)
 case let .Error(e):
   print("Also oh noes")
@@ -69,8 +63,8 @@ case let .Error(e):
 //     }
 // }
 //: You'll get helpful errors if there's a problem with your JSON
-"[1, 2, nll, 3]".asJSONResult()
-"[1, 2, 3, {\"a\":4, \"b\":5]".asJSONResult()
+"[1, 2, nll, 3]".asJSON()
+"[1, 2, 3, {\"a\":4, \"b\":5]".asJSON()
 //: Building a JSON object is easy
 let jason: JSON = [
   "first" : [1, 2, 3],
@@ -78,7 +72,7 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(String(jason).asJSONResult())
+print(String(jason).asJSON())
 
 
 Double("3E4")

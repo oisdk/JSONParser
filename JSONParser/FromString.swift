@@ -74,13 +74,7 @@ extension CollectionType where
 }
 
 extension String {
-  public func asJSONThrow() throws -> JSON {
-    switch ArraySlice(characters).nextDecoded {
-    case let j?: return j.0
-    case let .Error(e): throw e
-    }
-  }
-  public func asJSONResult() -> Result<JSON,JSONError> {
+  public func asJSON() -> Result<JSON,JSONError> {
     return ArraySlice(characters).nextDecoded.map { (j, _) in j}
   }
 }
