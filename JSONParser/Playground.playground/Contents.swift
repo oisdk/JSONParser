@@ -78,7 +78,7 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(jason)
+print(String(jason).asJSONResult())
 
 
 Double("3E4")

@@ -1,10 +1,3 @@
-//extension CollectionType where Generator.Element : Equatable, Index : BidirectionalIndexType {
-//  internal func trim(c: Generator.Element) -> SubSequence? {
-//    guard let s = indexOfNot(c), e = lastIndexOfNot(c) else  { return nil }
-//    return self[s...e]
-//  }
-//}
-
 extension CollectionType where Generator.Element : Hashable, Index : BidirectionalIndexType {
   internal func trim(cs: Set<Generator.Element>) -> SubSequence? {
     guard let s = indexOf(!cs.contains), e = lastIndexOf(!cs.contains)
@@ -18,7 +11,7 @@ extension CollectionType where Generator.Element : Equatable {
     rethrows -> Index? {
       for (var i = startIndex; i != endIndex; ++i) {
         let c = self[i]
-        if c == esc && ++i == endIndex { break }
+        if c == esc { if ++i == endIndex { break } }
         else if try isC(c) { return i }
       }
       return nil
