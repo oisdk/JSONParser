@@ -71,7 +71,7 @@ class JSONParserTests: XCTestCase {
     
     switch coded.asJSON() {
     case let .Some(j):
-      print(j.description)
+      print(j)
       XCTAssertEqual(expectation, j.description)
     case let .Error(e): XCTAssert(false, String(reflecting: e))
     }
