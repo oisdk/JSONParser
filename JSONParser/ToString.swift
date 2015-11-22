@@ -11,9 +11,9 @@ extension JSON : CustomStringConvertible {
       let joined = indntd.joinWithSeparator(",\n")
       return "{\n" + joined + "\n" + i + "}"
     case let .S(s): return "\"" + s + "\""
-    case let .B(b): return b.description
-    case let .D(d): return d.description
-    case let .I(i): return i.description
+    case let .B(b): return String(b)
+    case let .D(d): return String(d)
+    case let .I(i): return String(i)
     case null     : return "null"
     }
   }

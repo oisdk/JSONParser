@@ -2,7 +2,7 @@ extension String.CharacterView {
   private func brks(open: Character, _ close: Character)
     -> Result<(String.CharacterView, String.CharacterView),JSONError> {
     var count = 1
-    return dropFirst().divideNonEscaped{ c in
+    return dropFirst().divideNonEscaped("\\") { c in
       if c == close { --count } else if c == open  { ++count }
       return count == 0
     }.map(Result.Some) ?? .Error(.UnBal(String(self)))
@@ -14,7 +14,7 @@ private let wSpace: Set<Character> = [" ", ",", "\n"]
 
 extension Double {
   init?(exp: String) {
-    guard let (f,b) = exp.characters.divideNonEscaped(expChr.contains) else { return nil }
+    guard let (f,b) = exp.characters.divideNonEscaped("\\", isC: expChr.contains) else { return nil }
     guard let n = Double(String(f)), e = Int(String(b)) else { return nil }
     self = (0..<abs(e)).map { _ in 10 }.reduce(n, combine: (e < 0 ? (/) : (*)))
   }
@@ -22,7 +22,8 @@ extension Double {
 
 extension String.CharacterView {
   private var asAt: Result<JSON,JSONError> {
-    switch String(trim(wSpace)) {
+    guard let t = trim(wSpace) else { return .Error(.Parse(String(self))) }
+    switch String(t) {
     case "null" : return .Some(.null)
     case "true" : return .Some(.B(true))
     case "false": return .Some(.B(false))
@@ -64,7 +65,7 @@ extension String.CharacterView {
   }
 
   private var nextDecoded: Result<(JSON, String.CharacterView),JSONError> {
-    guard let i = indexOfNot(wSpace.contains) else { return .Error(.Empty) }
+    guard let i = indexOf(!wSpace.contains) else { return .Error(.Empty) }
     let v = suffixFrom(i)
     switch self[i] {
     case "[" : return v.brks("[","]").flatMap { (f,b) in f.asAr.map { a in (.A(a),b) }}
