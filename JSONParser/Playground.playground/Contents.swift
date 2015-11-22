@@ -72,7 +72,5 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(String(jason).asJSON())
-
-
-Double("3E4")
+print(String(jason))
+String(jason).asJSON().map { print($0) }
