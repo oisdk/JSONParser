@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		701BF6991C014D8C006205E5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701BF6981C014D8C006205E5 /* Utils.swift */; };
+		701F85EA1C036F3600B516B7 /* CharacterCodes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701F85E91C036F3600B516B7 /* CharacterCodes.swift */; };
 		703872D51BA6CA1100697A8E /* ToString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 703872D41BA6CA1100697A8E /* ToString.swift */; };
 		7047B9731BA63BF6003E6913 /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7047B9721BA63BF6003E6913 /* JSON.swift */; };
 		7082CCF11C0219CA00730127 /* Perf.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7082CCF01C0219CA00730127 /* Perf.swift */; };
@@ -31,6 +32,7 @@
 /* Begin PBXFileReference section */
 		701BF6981C014D8C006205E5 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		701E174B1BAD9EC000E23449 /* Reddit.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Reddit.playground; sourceTree = "<group>"; };
+		701F85E91C036F3600B516B7 /* CharacterCodes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CharacterCodes.swift; sourceTree = "<group>"; };
 		703872D41BA6CA1100697A8E /* ToString.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToString.swift; sourceTree = "<group>"; };
 		7047B9721BA63BF6003E6913 /* JSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
 		7082CCF01C0219CA00730127 /* Perf.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Perf.swift; sourceTree = "<group>"; };
@@ -86,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				70E000AD1BA5D2C600939B7E /* FromString.swift */,
+				701F85E91C036F3600B516B7 /* CharacterCodes.swift */,
 				703872D41BA6CA1100697A8E /* ToString.swift */,
 				70E000B61BA5DBFA00939B7E /* Playground.playground */,
 				70E000B31BA5D33300939B7E /* Result.swift */,
@@ -216,6 +219,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				701F85EA1C036F3600B516B7 /* CharacterCodes.swift in Sources */,
 				703872D51BA6CA1100697A8E /* ToString.swift in Sources */,
 				7047B9731BA63BF6003E6913 /* JSON.swift in Sources */,
 				70E000AE1BA5D2C600939B7E /* FromString.swift in Sources */,
