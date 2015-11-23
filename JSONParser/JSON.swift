@@ -1,50 +1,30 @@
 public enum JSON {
-  case S(String), D(Double), I(Int)
-  case A([JSON]), O([String:JSON])
-  case B(Bool), null
+  case JString(String), JFloat(Double), JInt(Int)
+  case JArray([JSON]), JObject([String:JSON])
+  case JBool(Bool), null
 }
 
-extension JSON: IntegerLiteralConvertible {
-  public init(integerLiteral: Int) {
-    self = .I(integerLiteral)
-  }
-}
-extension JSON: FloatLiteralConvertible {
-  public init(floatLiteral: Double) {
-    self = .D(floatLiteral)
-  }
-}
-extension JSON: BooleanLiteralConvertible {
-  public init(booleanLiteral: Bool) {
-    self = .B(booleanLiteral)
-  }
-}
-extension JSON: NilLiteralConvertible {
-  public init(nilLiteral: ()) {
-    self = .null
-  }
-}
-extension JSON: StringLiteralConvertible {
-  public init(stringLiteral: String) {
-    self = .S(stringLiteral)
-  }
-  public init(extendedGraphemeClusterLiteral: String) {
-    self = .S(extendedGraphemeClusterLiteral)
-  }
-  public init(unicodeScalarLiteral: String) {
-    self = .S(unicodeScalarLiteral)
-  }
-}
-extension JSON: ArrayLiteralConvertible {
-  public init(arrayLiteral: JSON...) {
-    self = .A(arrayLiteral)
-  }
-}
-extension JSON: DictionaryLiteralConvertible {
+extension JSON:
+  IntegerLiteralConvertible,
+  FloatLiteralConvertible,
+  BooleanLiteralConvertible,
+  NilLiteralConvertible,
+  StringLiteralConvertible,
+  ArrayLiteralConvertible,
+  DictionaryLiteralConvertible {
+  
+  public init(integerLiteral i: Int)                    { self = .JInt(i)    }
+  public init(floatLiteral f: Double)                   { self = .JFloat(f)  }
+  public init(booleanLiteral b: Bool)                   { self = .JBool(b)   }
+  public init(nilLiteral: ())                           { self = .null       }
+  public init(stringLiteral s: String)                  { self = .JString(s) }
+  public init(extendedGraphemeClusterLiteral s: String) { self = .JString(s) }
+  public init(unicodeScalarLiteral s: String)           { self = .JString(s) }
+  public init(arrayLiteral a: JSON...)                  { self = .JArray(a)  }
   public init(dictionaryLiteral: (String,JSON)...) {
     var dict = [String:JSON]()
     for (k,v) in dictionaryLiteral { dict[k] = v }
-    self = .O(dict)
+    self = .JObject(dict)
   }
 }
 
@@ -52,59 +32,40 @@ extension JSON: Equatable {}
 
 public func ==(lhs: JSON,rhs:JSON) -> Bool {
   switch (lhs, rhs){
-  case let (.S(a),.S(b)): return a == b
-  case let (.B(a),.B(b)): return a == b
-  case let (.I(a),.I(b)): return a == b
-  case let (.D(a),.D(b)): return a == b
-  case let (.A(a),.A(b)): return a == b
-  case let (.O(a),.O(b)): return a == b
-  case (.null,.null): return true
+  case let (.JString(a),.JString(b)): return a == b
+  case let (.JBool(a)  ,.JBool(b)  ): return a == b
+  case let (.JInt(a)   ,.JInt(b)   ): return a == b
+  case let (.JFloat(a) ,.JFloat(b) ): return a == b
+  case let (.JArray(a) ,.JArray(b) ): return a == b
+  case let (.JObject(a),.JObject(b)): return a == b
+  case     (.null      ,.null      ): return true
   default: return false
   }
 }
 
 extension JSON {
   public var array: [JSON]? {
-    guard case let .A(a) = self else { return nil }
-    return a
+    if case let .JArray(a) = self { return a }
+    return nil
   }
   public var object: [String:JSON]? {
-    guard case let .O(o) = self else { return nil }
-    return o
+    if case let .JObject(o) = self { return o }
+    return nil
   }
   public var string: String? {
-    guard case let .S(s) = self else { return nil }
-    return s
+    if case let .JString(s) = self { return s }
+    return nil
   }
   public var bool: Bool? {
-    guard case let .B(b) = self else { return nil }
-    return b
+    if case let .JBool(b) = self { return b }
+    return nil
   }
   public var int: Int? {
-    guard case let .I(i) = self else { return nil }
-    return i
+    if case let .JInt(i) = self { return i }
+    return nil
   }
   public var double: Double? {
-    guard case let .D(d) = self else { return nil }
-    return d
-  }
-}
-
-extension JSON {
-  public subscript(i: Int) -> JSON? {
-    get { return array?[i] }
-    set {
-      guard var a = array else { return }
-      a[i] = newValue!
-      self = .A(a)
-    }
-  }
-  public subscript(s: String) -> JSON? {
-    get { return object?[s] }
-    set {
-      guard var o = object else { return }
-      o[s] = newValue!
-      self = .O(o)
-    }
+    if case let .JFloat(d) = self { return d }
+    return nil
   }
 }

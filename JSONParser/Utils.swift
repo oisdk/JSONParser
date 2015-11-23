@@ -1,8 +1,10 @@
-prefix operator ! {}
-public prefix func !<T>(f: T -> Bool) -> T -> Bool {
-  return {!f($0)}
-}
-
-public func ~=<T>(lhs: T -> Bool, rhs: T) -> Bool {
-  return lhs(rhs)
+extension CollectionType {
+  func indexOf(from: Index, @noescape isElement: Generator.Element -> Bool) -> Index? {
+    for i in from..<endIndex {
+      if isElement(self[i]) {
+        return i
+      }
+    }
+    return nil
+  }
 }

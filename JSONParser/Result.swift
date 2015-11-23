@@ -1,16 +1,18 @@
-public enum Result<T,E> { case Some(T), Error(E) }
+public enum Result<A,B> {
+  case Some(A), None(B)
+}
 
-extension Result {
-  public func map<U>(@noescape f: T -> U) -> Result<U,E> {
+public extension Result {
+  func map<C>(@noescape f: A -> C) -> Result<C,B> {
     switch self {
-    case let .Error(e): return .Error(e)
     case let x?: return .Some(f(x))
+    case let .None(x): return .None(x)
     }
   }
-  public func flatMap<U>(@noescape f: T -> Result<U,E>) -> Result<U,E> {
+  func flatMap<C>(@noescape f: A -> Result<C,B>) -> Result<C,B> {
     switch self {
-    case let .Error(e): return .Error(e)
     case let x?: return f(x)
+    case let .None(x): return .None(x)
     }
   }
 }

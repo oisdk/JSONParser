@@ -1,89 +1,147 @@
-private let wSpace: Set<Character> = [" ", ",", "\n"]
-private let delims: Set<Character> = [" ", ",", "\n", "]", "}"]
-private let nullCh: [Character] = ["n","u","l","l"]
-private let trueCh: [Character] = ["t","r","u","e"]
-private let falsCh: [Character] = ["f","a","l","s","e"]
+let wspace: Set<Character> = [" ", "\t", "\r", "\n"]
+let wspccl: Set<Character> = [" ", "\t", "\r", "\n", ":"]
+let wspccm: Set<Character> = [" ", "\t", "\r", "\n", ","]
+let wspdlm: Set<Character> = [" ", "\t", "\r", "\n", "," ,"]", "}"]
+let digs:   Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-extension CollectionType where
-  Generator.Element == Character,
-  Index: BidirectionalIndexType,
-  SubSequence == Self {
-  private var asAt: Result<(JSON,Self),JSONError> {
-    if startsWith(nullCh) { return .Some(.null, dropFirst(4)) }
-    if startsWith(trueCh) { return .Some(.B(true), dropFirst(4)) }
-    if startsWith(falsCh) { return .Some(.B(false), dropFirst(5)) }
-    guard let i = indexOf(wSpace.contains) else { return .Error(.Parse(String(self))) }
-    let (s,b) = (String(prefixUpTo(i)),suffixFrom(i))
-    if let i = Int(s) { return Result.Some(JSON.I(i), b) }
-    if let d = Double(s) { return .Some(.D(d), b) }
-    return .Error(.Parse(s))
-  }
-
-  private var asAr: Result<([JSON],Self),JSONError> {
-    var (curr,result): (SubSequence,[JSON]) = (self,[])
-    for ;; {
-      switch curr.indexOf(!wSpace.contains) {
-      case let i? where curr[i] == "]":
-        let tup: ([JSON],Self) = (result,curr.suffixFrom(i.successor()))
-        return .Some(tup)
-      case nil: return .Error(.Parse(String(curr)))
-      case let i?:
-        switch curr.suffixFrom(i).nextDecoded {
-        case let (f,b)?:
-          curr = b
-          result.append(f)
-        case let .Error(e) : return .Error(e)
-        }
+extension CollectionType where Generator.Element == Character, SubSequence.Generator.Element == Character {
+  
+  public func decodeAtom(var from: Index) -> Result<(JSON,Index),String> {
+    switch self[from] {
+    case "n", "N":
+      if (self[++from] == "u" || self[from] == "U") &&
+         (self[++from] == "l" || self[from] == "L") &&
+         (self[++from] == "l" || self[from] == "L") {
+          return Result<((JSON,Index)),String>.Some((JSON.null,++from))
+      } else {
+        return .None("Expecting null, found " + String(suffixFrom(from)))
       }
-      
+    case "t", "T":
+      if (self[++from] == "r" || self[from] == "R") &&
+         (self[++from] == "u" || self[from] == "U") &&
+         (self[++from] == "e" || self[from] == "E") {
+          return Result<((JSON,Index)),String>.Some((JSON.JBool(true),++from))
+      } else {
+        return .None("Expecting true, found " + String(suffixFrom(from)))
+      }
+    case "f", "F":
+      if (self[++from] == "a" || self[from] == "A") &&
+         (self[++from] == "l" || self[from] == "L") &&
+         (self[++from] == "s" || self[from] == "S") &&
+         (self[++from] == "e" || self[from] == "E") {
+          return Result<((JSON,Index)),String>.Some((JSON.JBool(false),++from))
+      } else {
+        return .None("Expecting false, found " + String(suffixFrom(from)))
+      }
+    case let c where digs.contains(c):
+      guard let i = indexOf(from.successor(), isElement: wspdlm.contains)
+        else { return .None("Expecting delimiter, found " + String(suffixFrom(from))) }
+      let str = String(self[from..<i])
+      if let int = Int(str) {
+        return Result<((JSON,Index)),String>.Some((JSON.JInt(int),i))
+      } else if let flo = Double(str) {
+        return Result<((JSON,Index)),String>.Some((JSON.JFloat(flo),i))
+      }
+      return .None("Expecting number, found " + String(suffixFrom(from)))
+    default: return .None("Expecting literal, found " + String(suffixFrom(from)))
     }
-  }
-
-  private var asOb: Result<([String:JSON],Self),JSONError> {
-    var (curr,result) = (self,[String:JSON]())
-    while let i = curr.indexOf(!wSpace.contains) {
-      if curr[i] == "}" {
-        let tup: ([String:JSON],Self) = (result,curr.suffixFrom(i.successor()))
-        return .Some(tup)
-      }
-      if curr[i] != "\"" { break }
-      switch curr.suffixFrom(i.successor()).asString {
-      case let .Error(e) : return .Error(e)
-      case let (k,b)?:
-        guard let col = b.indexOf(":")
-          else { return .Error(.Parse("Expecting \":\", found: " + String(b))) }
-        let c = b.suffixFrom(col.successor())
-        switch c.indexOf(!wSpace.contains).map(c.suffixFrom)?.nextDecoded {
-        case let .Error(e)?: return .Error(e)
-        case let (v,d)??:
-          result[k] = v
-          curr = d
-        case nil: return .Error(.Parse(String(c)))
-        }
-      }
-    }
-    return .Error(.UnBal(String(self)))
   }
   
-  private var asString: Result<(String,Self),JSONError> {
-    switch divideNonEscaped("\\", isC: { c in c == "\"" }) {
-    case let (f,b)?: return .Some(String(f),b)
-    case .None: return .Error(.UnBal(String(self)))
+  public func decodeString(var from: Index) -> Result<(String,Index),String> {
+    var res = ""
+    while true {
+      switch self[from++] {
+      case "\"":
+        return Result<((String,Index)),String>
+          .Some((res,from))
+      case "\\":
+        guard let (a,b) = decodeEscaped(from)
+          else { return .None(String(suffixFrom(from))) }
+        res.append(a)
+        from = b
+      case let c: res.append(c)
+      }
     }
   }
-
-  private var nextDecoded: Result<(JSON, SubSequence),JSONError> {
-    switch first! {
-    case "[" : return dropFirst().asAr.map { (a,b) in (.A(a),b) }
-    case "{" : return dropFirst().asOb.map { (o,b) in (.O(o),b) }
-    case "\"": return dropFirst().asString.map { (s,r) in (.S(s),r) }
-    default  : return asAt
+  
+  func decodeEscaped(var from: Index) -> Result<(Character,Index),String> {
+    switch self[from++] {
+    case "\"": return Result<((Character,Index)),String>.Some(("\"",from))
+    case "/" : return Result<((Character,Index)),String>.Some(("/",from))
+    case "b" : return Result<((Character,Index)),String>.Some(("\u{8}",from))
+    case "f" : return Result<((Character,Index)),String>.Some(("\u{12}",from))
+    case "n" : return Result<((Character,Index)),String>.Some(("\n",from))
+    case "r" : return Result<((Character,Index)),String>.Some(("\r",from))
+    case "t" : return Result<((Character,Index)),String>.Some(("\t",from))
+    case "u":
+      let end = from.advancedBy(4)
+      let str = String(self[from..<end])
+      guard let usc = UInt32(str, radix: 16)
+        else { return .None("Expecting unicode literal, found: " + str) }
+      return Result<((Character,Index)),String>
+        .Some((Character(UnicodeScalar(usc)),end))
+    default: return .None(String(suffixFrom(from)))
     }
+  }
+  
+  func decodeArr(var from: Index) -> Result<([JSON],Index),String> {
+    var res: [JSON] = []
+    while let i = indexOf(from, isElement: { c in !wspccm.contains(c) }) {
+      if self[i] == "]" {
+        return Result<(([JSON],Index)),String>.Some((res,i.successor()))
+      }
+      switch decode(i) {
+      case let (j,x)?:
+        res.append(j)
+        from = x
+      case let .None(s): return .None(s)
+      }
+    }
+    return .None("Array not ended: " + String(suffixFrom(from)))
+  }
+  
+  func decodeObj(var from: Index) -> Result<([String:JSON],Index),String> {
+    var res: [String:JSON] = [:]
+    while let i = indexOf(from, isElement: { c in !wspccm.contains(c) }) {
+      if self[i] == "}" {
+        return Result<(([String:JSON],Index)),String>.Some((res,i.successor()))
+      }
+      guard self[i] == "\"" else {
+        return .None("Expecting beginning of dictionary key, found: " + String(suffixFrom(from)))
+      }
+      switch decodeString(i.successor()) {
+      case let .None(s): return .None(s)
+      case let .Some(key,ind):
+        guard let valind = indexOf(ind, isElement: { c in !wspccl.contains(c) } )
+          else { return .None("Expecting value in dictionary, found: " + String(suffixFrom(from))) }
+        switch decode(valind) {
+        case let .None(s): return .None(s)
+        case let (val,rind)?:
+          res[key] = val
+          from = rind
+        }
+      }
+    }
+    return .None("Object not ended: " + String(suffixFrom(from)))
+  }
+  
+  func decode(from: Index) -> Result<(JSON,Index),String> {
+    let i = from.successor()
+    switch self[from] {
+    case "[": return decodeArr(i).map { (a,i) in (JSON.JArray(a),i) }
+    case "{": return decodeObj(i).map { (o,i) in (JSON.JObject(o),i) }
+    case "\"": return decodeString(i).map { (s,i) in (JSON.JString(s),i) }
+    default: return decodeAtom(from)
+    }
+  }
+  
+  public func asJSON() -> Result<JSON,String> {
+    return decode(startIndex).map { (j,_) in j }
   }
 }
 
 extension String {
-  public func asJSON() -> Result<JSON,JSONError> {
-    return ArraySlice(characters).nextDecoded.map { (j, _) in j}
+  public func asJSON() -> Result<JSON,String> {
+    return Array(characters).decode(0).map { (j,_) in j }
   }
 }
