@@ -16,3 +16,5 @@ public extension Result {
     }
   }
 }
+
+public func pure<A,B>(a:A) -> Result<A,B> { return .Some(a) }

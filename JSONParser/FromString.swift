@@ -22,6 +22,7 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
   }
   
   private func decodeTrue(var from: Index) -> Result<(JSON,Index),String> {
+    
     if (self[  from] == Code.r || self[from] == Code.R) &&
        (self[++from] == Code.u || self[from] == Code.U) &&
        (self[++from] == Code.e || self[from] == Code.E) {
@@ -49,7 +50,7 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
       default:
         let s = uStr(self[from..<i])
         if let n = isDouble ? Double(s).map(JSON.JFloat) : Int(s).map(JSON.JInt) {
-          return Result<((JSON,Index)),String>.Some((n,i))
+          return .Some(n,i)
         }
         return .None("Line: \(loc(from)).Expecting number, found: " + s)
       }
@@ -86,7 +87,7 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
       let end = from.advancedBy(4)
       let str = uStr(self[from..<end])
       guard let usc = UInt32(str, radix: 16) else {
-        return .None("Line: \(loc(from)).Expecting unicode literal, found: " + str)
+        return .None("Line: \(loc(from)). Expecting unicode literal, found: " + str)
       }
       return Result<((Character,Index)),String>
         .Some((Character(UnicodeScalar(usc)),end))
@@ -94,12 +95,11 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
     }
   }
   
-  private func skipMany(from: Index, sep: UInt8, end: UInt8) -> Result<(Bool,Index),String> {
+  private func skipMany(from: Index, sep: UInt8) -> Result<(Index),String> {
     for i in from..<endIndex {
       switch self[i] {
       case Code.space, Code.tab, Code.ret, Code.newlin, sep: continue
-      case end: return .Some(true,i.successor())
-      default: return .Some(false,i)
+      default: return .Some(i)
       }
     }
     return .None("Unexpected eof")
@@ -107,8 +107,10 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
   
   private func decodeArr(var from: Index) -> Result<([JSON],Index),String> {
     var res: [JSON] = []
-    while let (e,i) = skipMany(from, sep: Code.comma, end: Code.squarC) {
-      if e { return Result<(([JSON],Index)),String>.Some((res,i)) }
+    while let i = skipMany(from, sep: Code.comma) {
+      if self[i] == Code.squarC {
+        return Result<(([JSON],Index)),String>.Some((res,i.successor()))
+      }
       guard let (a,j) = decode(i) else { return .None(uStr(suffixFrom(i))) }
       res.append(a)
       from = j
@@ -118,11 +120,12 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
   
   private func decodeObj(var from: Index) -> Result<([String:JSON],Index),String> {
     var res: [String:JSON] = [:]
-    while let (e,i) = skipMany(from, sep: Code.comma, end: Code.curliC) {
-      if e { return Result<(([String:JSON],Index)),String>.Some((res,i)) }
+    while let i = skipMany(from, sep: Code.comma) {
+      if self[i] == Code.curliC {
+        return Result<(([String:JSON],Index)),String>.Some((res,i.successor()))
+      }
       guard let (key,j) = decodeString(i.successor()),
-        (_,k) = skipMany(j, sep: Code.colon, end: Code.curliC),
-        (val,l) = decode(k) else {
+                (val,l) = skipMany(j, sep: Code.colon).flatMap(decode) else {
         return .None("Line: \(loc(from)): " + uStr(suffixFrom(i)))
       }
       res[key] = val
@@ -151,6 +154,6 @@ extension CollectionType where Generator.Element == UInt8, SubSequence.Generator
 
 extension String {
   public func asJSON() -> Result<JSON,String> {
-    return Array(utf8).decode(0).map { (j,_) in j }
+    return utf8.decode(utf8.startIndex).map { (j,_) in j }
   }
 }
