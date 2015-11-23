@@ -8,3 +8,11 @@ extension CollectionType {
     return nil
   }
 }
+
+extension SequenceType where Generator.Element : Equatable {
+  func count(e: Generator.Element) -> Int {
+    var res = 0
+    for x in self where x == e { ++res }
+    return res
+  }
+}
