@@ -73,4 +73,10 @@ internal struct Code {
   static let bslash: UInt8 = 92
   static let fslash: UInt8 = 47
   
+  static let plus: UInt8 = 43
+  static let hyphen: UInt8 = 45
+  static let fullst: UInt8 = 46
+  
+  static let Zero: UInt8 = 48
+  static let Nine: UInt8 = 57
 }
