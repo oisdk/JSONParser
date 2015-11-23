@@ -26,14 +26,14 @@ import JSONParser
 //: Or with a result type:
 switch first.asJSON() {
 case let j?: let _ = j
-case let .Error(e):
+case let .None(e):
   print("Also oh noes")
   print(e)
 }
 //: The JSON can be got back, in a formatted form, via the description property:
 switch first.asJSON() {
 case let j?: print(j)
-case let .Error(e):
+case let .None(e):
   print("Also oh noes")
   print(e)
 }
@@ -72,5 +72,5 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(String(jason))
+print(jason)
 String(jason).asJSON().map { print($0) }

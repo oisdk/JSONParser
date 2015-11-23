@@ -13,26 +13,23 @@ extension CollectionType where Generator.Element == Character, SubSequence.Gener
          (self[++from] == "l" || self[from] == "L") &&
          (self[++from] == "l" || self[from] == "L") {
           return Result<((JSON,Index)),String>.Some((JSON.null,++from))
-      } else {
-        return .None("Expecting null, found " + String(suffixFrom(from)))
       }
+      return .None("Expecting null, found " + String(suffixFrom(from)))
     case "t", "T":
       if (self[++from] == "r" || self[from] == "R") &&
          (self[++from] == "u" || self[from] == "U") &&
          (self[++from] == "e" || self[from] == "E") {
           return Result<((JSON,Index)),String>.Some((JSON.JBool(true),++from))
-      } else {
-        return .None("Expecting true, found " + String(suffixFrom(from)))
       }
+      return .None("Expecting true, found " + String(suffixFrom(from)))
     case "f", "F":
       if (self[++from] == "a" || self[from] == "A") &&
          (self[++from] == "l" || self[from] == "L") &&
          (self[++from] == "s" || self[from] == "S") &&
          (self[++from] == "e" || self[from] == "E") {
           return Result<((JSON,Index)),String>.Some((JSON.JBool(false),++from))
-      } else {
-        return .None("Expecting false, found " + String(suffixFrom(from)))
       }
+      return .None("Expecting false, found " + String(suffixFrom(from)))
     case let c where digs.contains(c):
       guard let i = indexOf(from.successor(), isElement: wspdlm.contains)
         else { return .None("Expecting delimiter, found " + String(suffixFrom(from))) }
@@ -128,10 +125,10 @@ extension CollectionType where Generator.Element == Character, SubSequence.Gener
   func decode(from: Index) -> Result<(JSON,Index),String> {
     let i = from.successor()
     switch self[from] {
-    case "[": return decodeArr(i).map { (a,i) in (JSON.JArray(a),i) }
-    case "{": return decodeObj(i).map { (o,i) in (JSON.JObject(o),i) }
+    case "[" : return decodeArr(i).map { (a,i) in (JSON.JArray(a),i) }
+    case "{" : return decodeObj(i).map { (o,i) in (JSON.JObject(o),i) }
     case "\"": return decodeString(i).map { (s,i) in (JSON.JString(s),i) }
-    default: return decodeAtom(from)
+    default  : return decodeAtom(from)
     }
   }
   

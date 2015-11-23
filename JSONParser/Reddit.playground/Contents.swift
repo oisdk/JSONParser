@@ -1,6 +1,8 @@
 import Foundation
 import XCPlayground
 import JSONParser
+
+
 func httpGet(request: NSURLRequest!, callback: (String, String?) -> Void) {
   let session = NSURLSession.sharedSession()
   let task = session.dataTaskWithRequest(request){
@@ -17,14 +19,21 @@ func httpGet(request: NSURLRequest!, callback: (String, String?) -> Void) {
 }
 
 
+
 var request = NSMutableURLRequest(URL: NSURL(string: "http://www.reddit.com/r/pics.json")!)
 
 httpGet(request){
   (data, error) -> Void in
   if let error = error {
     print(error)
-  } else if let jo = data.asJSON() {
-    print(jo)
+  } else {
+    switch data.asJSON() {
+    case let .None(s): print(s)
+    case let x?:
+      print("!!!")
+      print(x)
+      print("!!!")
+    }
   }
 }
 
