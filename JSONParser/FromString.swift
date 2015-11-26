@@ -6,154 +6,192 @@ func uStr<S : SequenceType where S.Generator.Element == UInt8>(s: S) -> String {
   return String(s.lazy.map(uChr))
 }
 
-extension CollectionType where Generator.Element == UInt8, SubSequence.Generator.Element == UInt8 {
-  
-  private func loc(from: Index) -> Int {
-    return prefixUpTo(from).count(Code.newlin)
+extension PositionGenerator where Element == UInt8 {
+  private mutating func error(lit lit: String) -> JSONError {
+    return JSONError.Lit(expecting: lit, found: uStr(peek(5)))
+  }
+  private mutating func numError(soFar: [UInt8]) -> JSONError {
+    return JSONError.Number(uStr(soFar) + uStr(peek(5)))
+  }
+  private mutating func closingDelim(soFar: String) -> JSONError {
+    return JSONError.NoClosingDelimString(soFar: soFar, found: uStr(peek(5)))
+  }
+  private mutating func closingDelim(soFar: [JSON]) -> JSONError {
+    return JSONError.NoClosingDelimArray(
+      soFar: soFar
+        .map { i in String(String(i).characters.prefix(5)) + "..."}
+        .joinWithSeparator("\n"),
+      found: uStr(peek(5)))
+  }
+  private mutating func closingDelim(soFar: [String:JSON]) -> JSONError {
+    return JSONError.NoClosingDelimObject(
+      soFar: soFar
+        .map { (k,_) in k + ": ..."}
+        .joinWithSeparator("\n"),
+      found: uStr(peek(5))
+    )
+  }
+}
+
+extension PositionGenerator where Element == UInt8 {
+
+  private mutating func decodeNull() -> Result<JSON,JSONError> {
+    var n = next()
+    if n != Code.u && n != Code.U { return .None(error(lit: "null")) }
+    n = next()
+    if n != Code.l && n != Code.L { return .None(error(lit: "null")) }
+    n = next()
+    if n != Code.l && n != Code.L { return .None(error(lit: "null")) }
+    return Result<JSON,JSONError>.Some(JSON.null)
   }
   
-  private func decodeNull(var from: Index) -> Result<(JSON,Index),String> {
-    if (self[  from] == Code.u || self[from] == Code.U) &&
-       (self[++from] == Code.l || self[from] == Code.L) &&
-       (self[++from] == Code.l || self[from] == Code.L) {
-        return Result<((JSON,Index)),String>.Some((JSON.null,from.successor()))
-    }
-    return .None("Line: \(loc(from)). Expecting null, found " + uStr(suffixFrom(from)))
+  private mutating func decodeTrue() -> Result<JSON,JSONError> {
+    var n = next()
+    if n != Code.r && n != Code.R { return .None(error(lit: "true")) }
+    n = next()
+    if n != Code.u && n != Code.U { return .None(error(lit: "true")) }
+    n = next()
+    if n != Code.e && n != Code.E { return .None(error(lit: "true")) }
+    return Result<JSON,JSONError>.Some(JSON.JBool(true))
   }
   
-  private func decodeTrue(var from: Index) -> Result<(JSON,Index),String> {
-    
-    if (self[  from] == Code.r || self[from] == Code.R) &&
-       (self[++from] == Code.u || self[from] == Code.U) &&
-       (self[++from] == Code.e || self[from] == Code.E) {
-        return Result<((JSON,Index)),String>.Some((JSON.JBool(true),from.successor()))
-    }
-    return .None("Line: \(loc(from)).Expecting true, found " + uStr(suffixFrom(from)))
+  private mutating func decodeFalse() -> Result<JSON,JSONError> {
+    var n = next()
+    if n != Code.a && n != Code.A { return .None(error(lit: "true")) }
+    n = next()
+    if n != Code.l && n != Code.L { return .None(error(lit: "true")) }
+    n = next()
+    if n != Code.s && n != Code.S { return .None(error(lit: "true")) }
+    n = next()
+    if n != Code.e && n != Code.E { return .None(error(lit: "true")) }
+    n = next()
+    return Result<JSON,JSONError>.Some(JSON.JBool(false))
   }
   
-  private func decodeFalse(var from: Index) -> Result<(JSON,Index),String> {
-    if (self[  from] == Code.a || self[from] == Code.A) &&
-       (self[++from] == Code.l || self[from] == Code.L) &&
-       (self[++from] == Code.s || self[from] == Code.S) &&
-       (self[++from] == Code.e || self[from] == Code.E) {
-        return Result<((JSON,Index)),String>.Some((JSON.JBool(false),from.successor()))
-    }
-    return .None("Line: \(loc(from)).Expecting false, found " + uStr(suffixFrom(from)))
-  }
-  
-  private func decodeNum(from: Index) -> Result<(JSON,Index),String> {
+  private mutating func decodeNum(n: UInt8) -> Result<JSON,JSONError> {
     var isDouble = false
-    for i in from..<endIndex {
-      switch self[i] {
-      case Code.Zero...Code.Nine, Code.plus, Code.hyphen: continue
-      case Code.e, Code.E, Code.fullst: isDouble = true
+    var bytes: [UInt8] = [n]
+    while let i = next() {
+      switch i {
+      case Code.e, Code.E, Code.fullst:
+        isDouble = true
+        fallthrough
+      case Code.Zero...Code.Nine, Code.plus, Code.hyphen:
+        bytes.append(i)
       default:
-        let s = uStr(self[from..<i])
+        let s = uStr(bytes)
         if let n = isDouble ? Double(s).map(JSON.JFloat) : Int(s).map(JSON.JInt) {
-          return .Some(n,i)
+          return .Some(n)
         }
-        return .None("Line: \(loc(from)).Expecting number, found: " + s)
+        return .None(numError(bytes))
       }
     }
-    return .None("Unexpected eof when parsing number")
+    return .None(numError(bytes))
   }
   
-  private func decodeString(var from: Index) -> Result<(String,Index),String> {
+  private mutating func decodeString() -> Result<String,JSONError> {
     var res = ""
-    while true {
-      switch self[from++] {
+    while let n = next() {
+      switch n {
       case Code.quot:
-        return Result<((String,Index)),String>.Some((res,from))
+        return Result<String,JSONError>.Some(res)
       case Code.bslash:
-        guard let (a,b) = decodeEscaped(from)
-          else { return .None(uStr(suffixFrom(from))) }
-        res.append(a)
-        from = b
+        switch decodeEscaped() {
+        case let a?: res.appendContentsOf(a)
+        case let .None(e): return .None(e)
+        }
       case let c: res.append(Character(UnicodeScalar(c)))
       }
     }
+    return .None(closingDelim(res))
   }
   
-  private func decodeEscaped(var from: Index) -> Result<(Character,Index),String> {
-    switch self[from++] {
-    case Code.quot  : return Result<((Character,Index)),String>.Some(("\"",from))
-    case Code.fslash: return Result<((Character,Index)),String>.Some(("/",from))
-    case Code.b: return Result<((Character,Index)),String>.Some(("\u{8}",from))
-    case Code.f: return Result<((Character,Index)),String>.Some(("\u{12}",from))
-    case Code.n: return Result<((Character,Index)),String>.Some(("\n",from))
-    case Code.r: return Result<((Character,Index)),String>.Some(("\r",from))
-    case Code.t: return Result<((Character,Index)),String>.Some(("\t",from))
-    case Code.u:
-      let end = from.advancedBy(4)
-      let str = uStr(self[from..<end])
-      guard let usc = UInt32(str, radix: 16) else {
-        return .None("Line: \(loc(from)). Expecting unicode literal, found: " + str)
+  private mutating func decodeEscaped() -> Result<String,JSONError> {
+    switch next() {
+    case Code.quot?  : return .Some("\"")
+    case Code.fslash?: return .Some("/")
+    case Code.b?: return .Some("\u{8}")
+    case Code.f?: return .Some("\u{12}")
+    case Code.n?: return .Some("\n")
+    case Code.r?: return .Some("\r")
+    case Code.t?: return .Some("\t")
+    case Code.u?:
+      guard let a = next(), b = next(), c = next(), d = next() else {
+        fallthrough
       }
-      return Result<((Character,Index)),String>
-        .Some((Character(UnicodeScalar(usc)),end))
-    default: return .None(uStr(suffixFrom(from)))
+      guard let s = UInt32(uStr([a,b,c,d]), radix: 16)
+        .map({String(Character(UnicodeScalar($0)))}) else {
+          fallthrough
+      }
+      return .Some(s)
+    default: return .None(error(lit: "Unicode"))
     }
   }
   
-  private func skipMany(from: Index, sep: UInt8) -> Result<(Index),String> {
-    for i in from..<endIndex {
-      switch self[i] {
+  private mutating func skipMany(sep: UInt8) -> UInt8? {
+    while let i = next() {
+      switch i {
       case Code.space, Code.tab, Code.ret, Code.newlin, sep: continue
-      default: return .Some(i)
+      default: return i
       }
     }
-    return .None("Unexpected eof")
+    return nil
   }
   
-  private func decodeArr(var from: Index) -> Result<([JSON],Index),String> {
+  private mutating func decodeArr() -> Result<[JSON],JSONError> {
     var res: [JSON] = []
-    while let i = skipMany(from, sep: Code.comma) {
-      if self[i] == Code.squarC {
-        return Result<(([JSON],Index)),String>.Some((res,i.successor()))
+    while let i = skipMany(Code.comma) {
+      if i == Code.squarC { return .Some(res) }
+      switch decode(i) {
+      case let a?: res.append(a)
+      case let .None(e): return .None(e)
       }
-      guard let (a,j) = decode(i) else { return .None(uStr(suffixFrom(i))) }
-      res.append(a)
-      from = j
     }
-    return .None("Line: \(loc(from)). Array not ended: " + uStr(suffixFrom(from)))
+    return .None(closingDelim(res))
   }
   
-  private func decodeObj(var from: Index) -> Result<([String:JSON],Index),String> {
+  private mutating func decodeObj() -> Result<[String:JSON],JSONError> {
     var res: [String:JSON] = [:]
-    while let i = skipMany(from, sep: Code.comma) {
-      if self[i] == Code.curliC {
-        return Result<(([String:JSON],Index)),String>.Some((res,i.successor()))
+    while let i = skipMany(Code.comma) {
+      if i == Code.curliC { return .Some(res) }
+      let (key,val): (String,JSON)
+      switch decodeString() {
+      case let s?: key = s
+      case let .None(e): return .None(e)
       }
-      guard let (key,j) = decodeString(i.successor()),
-                (val,l) = skipMany(j, sep: Code.colon).flatMap(decode) else {
-        return .None("Line: \(loc(from)): " + uStr(suffixFrom(i)))
+      guard let i = skipMany(Code.colon) else {
+        return .None(closingDelim(res))
+      }
+      switch decode(i) {
+      case let v?: val = v
+      case let .None(e): return .None(e)
       }
       res[key] = val
-      from = l
     }
-    return .None("Unexpected eof")
+    return .None(closingDelim(res))
   }
 
-  private func decode(from: Index) -> Result<(JSON,Index),String> {
-    let i = from.successor()
-    switch self[from] {
-    case Code.squarO: return decodeArr(i).map { (a,b) in (.JArray(a),b) }
-    case Code.curliO: return decodeObj(i).map { (a,b) in (.JObject(a),b) }
-    case Code.quot: return decodeString(i).map { (a,b) in (.JString(a),b) }
-    case Code.n, Code.N: return decodeNull(i)
-    case Code.t, Code.T: return decodeTrue(i)
-    case Code.f, Code.F: return decodeFalse(i)
-    default: return decodeNum(from)
+  private mutating func decode(i: UInt8) -> Result<JSON,JSONError> {
+    switch i {
+    case Code.squarO: return decodeArr().map(JSON.JArray)
+    case Code.curliO: return decodeObj().map(JSON.JObject)
+    case Code.quot: return decodeString().map(JSON.JString)
+    case Code.n, Code.N: return decodeNull()
+    case Code.t, Code.T: return decodeTrue()
+    case Code.f, Code.F: return decodeFalse()
+    default: return decodeNum(i)
     }
   }
 
-  public func asJSON() -> Result<JSON,String> {
-    return decode(startIndex).map { (j,_) in j }
+  public mutating func asJSON() -> Result<JSON,JSONError> {
+    guard let i = next() else { return .None(.Empty) }
+    return decode(i)
   }
 }
 
 extension String {
-  public func asJSON() -> Result<JSON,String> {
-    return utf8.decode(utf8.startIndex).map { (j,_) in j }
+  public func asJSON() -> Result<JSON,JSONError> {
+    var g = InfoIndexingGenerator(utf8)
+    return g.asJSON()
   }
 }
