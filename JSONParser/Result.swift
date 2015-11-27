@@ -23,6 +23,7 @@ public enum JSONError {
   case NoClosingDelimArray(soFar: String, found: String)
   case NoClosingDelimObject(soFar: String, found: String)
   case NoClosingDelimString(soFar: String, found: String)
+  case NoDivider(expecting: String, found: String)
   case Empty
 }
 
@@ -39,7 +40,18 @@ extension JSONError : CustomStringConvertible {
       return "Object without closing \"}\". In object: " + f + "at point: " + s
     case let .NoClosingDelimString(f,s):
       return "String without closing \". In string: " + f + "at point: " + s
+    case let .NoDivider(e,f):
+      return "Expecting divider: \"" + e + "\". Found: \"" + f + "\""
     case .Empty: return "Empty string"
     }
+  }
+}
+
+infix operator >>= { associativity right precedence 90 }
+
+func >>=<A,B,C>(lhs: Result<A,B>, @noescape rhs: A -> Result<C,B>) -> Result<C,B> {
+  switch lhs {
+  case let x?: return rhs(x)
+  case let .None(e): return .None(e)
   }
 }
