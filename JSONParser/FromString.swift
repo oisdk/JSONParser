@@ -12,17 +12,19 @@ extension GeneratorType where Element == UInt8 {
     return JSONError.NoClosingDelimString(soFar: soFar, found: uStr(peek(5)))
   }
   private mutating func closingDelim(soFar: [JSON]) -> JSONError {
+    let desc = soFar
+      .map { i in String(String(i).characters.prefix(5)) + "..."}
+      .joinWithSeparator("\n    ")
     return JSONError.NoClosingDelimArray(
-      soFar: soFar
-        .map { i in String(String(i).characters.prefix(5)) + "..."}
-        .joinWithSeparator("\n"),
+      soFar: "\n    " + desc,
       found: uStr(peek(5)))
   }
   private mutating func closingDelim(soFar: [String:JSON]) -> JSONError {
+    let desc = soFar
+      .map { (k,_) in k + ": ..."}
+      .joinWithSeparator("\n    ")
     return JSONError.NoClosingDelimObject(
-      soFar: soFar
-        .map { (k,_) in k + ": ..."}
-        .joinWithSeparator("\n"),
+      soFar: "\n    " + desc,
       found: uStr(peek(5))
     )
   }

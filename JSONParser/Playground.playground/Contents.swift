@@ -24,19 +24,10 @@ import JSONParser
 // }
 
 //: Or with a result type:
-switch first.asJSON() {
-case let j?: let _ = j
-case let .None(e):
-  print("Also oh noes")
-  print(e)
-}
+first.asJSON()
 //: The JSON can be got back, in a formatted form, via the description property:
-switch first.asJSON() {
-case let j?: print(j)
-case let .None(e):
-  print("Also oh noes")
-  print(e)
-}
+print(first.asJSON())
+print("\n")
 // {
 //     "glossary": {
 //         "title": "example glossary",
@@ -63,8 +54,9 @@ case let .None(e):
 //     }
 // }
 //: You'll get helpful errors if there's a problem with your JSON
-"[1, 2, nll, 3]".asJSON()
-"[1, 2, 3, {\"a\":4, \"b\":5]".asJSON()
+print("[1, 2, nll, 3]".asJSON())
+print("\n")
+print("[1, 2, 3, {\"a\":4, \"b\":5]".asJSON())
 //: Building a JSON object is easy
 let jason: JSON = [
   "first" : [1, 2, 3],
@@ -72,6 +64,6 @@ let jason: JSON = [
   "third" : true,
   "fourth": [nil, 1, 4.5, false]
 ]
-print(jason)
-String(jason).asJSON().map { print($0) }
+print("\n")
+print(String(jason).asJSON())
 

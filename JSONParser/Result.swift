@@ -41,15 +41,15 @@ extension JSONError : CustomStringConvertible {
   public var description: String {
     switch self {
     case let .Lit(e,f):
-      return "Malformed literal. Expecting: " + e + ", found: " + f
+      return "Malformed literal. Expecting: \"" + e + "\", found: \"" + f + "\""
     case let .Number(n):
       return "Malformed number. Found: " + n
     case let .NoClosingDelimArray(f,s):
-      return "Array without closing \"]\". In array: " + f + "at point: " + s
+      return "Array without closing \"]\".\nIn array: " + f + "\nAt point: \"" + s + "\""
     case let .NoClosingDelimObject(f,s):
-      return "Object without closing \"}\". In object: " + f + "at point: " + s
+      return "Object without closing \"}\".\nIn object: " + f + "\nAt point: \"" + s + "\""
     case let .NoClosingDelimString(f,s):
-      return "String without closing \". In string: " + f + "at point: " + s
+      return "String without closing \".\nIn string: " + f + "\nAt point: \"" + s + "\""
     case let .NoDivider(e,f):
       return "Expecting divider: \"" + e + "\". Found: \"" + f + "\""
     case .Empty: return "Empty string"
