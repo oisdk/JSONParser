@@ -17,6 +17,16 @@ public extension Result {
   }
 }
 
+extension Result: CustomStringConvertible {
+  public var description: String {
+    switch self {
+    case let x?: return "Success: " + String(x)
+    case let .None(x): return "Failure: " + String(x)
+    }
+  }
+}
+  
+
 public enum JSONError {
   case Lit(expecting: String, found: String)
   case Number(String)
